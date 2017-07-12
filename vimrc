@@ -15,7 +15,7 @@ Plug 'Raimondi/delimitMate'
 Plug 'scrooloose/nerdcommenter'
 Plug 'albfan/nerdtree-git-plugin'
 Plug 'scrooloose/nerdtree'
-Plug 'vim-syntastic/syntastic'
+Plug 'w0rp/ale' " aync linter
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'altercation/vim-colors-solarized'
@@ -26,15 +26,34 @@ Plug 'pangloss/vim-javascript'
 Plug 'tpope/vim-rails'
 Plug 'thoughtbot/vim-rspec'
 Plug 'airblade/vim-gitgutter'
-Plug 'xolox/vim-misc'
-Plug 'xolox/vim-session'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-sleuth'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'Valloric/YouCompleteMe', { 'do': function('BuildYCM') }
 Plug 'tpope/vim-dispatch'
+Plug 'ervandew/supertab'
+Plug 'SirVer/ultisnips' " snippets supporting
+Plug 'honza/vim-snippets' " snippets collection
+Plug 'kana/vim-textobj-user'
+Plug 'nelstrom/vim-textobj-rubyblock'
+Plug 'sjl/gundo.vim'
 call plug#end()
+
+let g:delimitMate_expand_cr = 1
+let g:delimitMate_expand_space = 1
+
+" make YCM compatible with UltiSnips (using supertab)
+let g:ycm_key_list_select_completion = ['<C-n>']
+let g:ycm_key_list_previous_completion = ['<C-p>']
+let g:SuperTabDefaultCompletionType = '<C-n>'
+" better key bindings for UltiSnipsExpandTrigger
+let g:UltiSnipsExpandTrigger = "<tab>"
+let g:UltiSnipsJumpForwardTrigger = "<tab>"
+let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
+let g:UltiSnipsSnippetsDir = "~/.vim/snips"
+let g:UltiSnipsSnippetDirectories = ["snips"]
+let g:UltiSnipsEditSplit="vertical"
 
 " set leader key
 let mapleader = ','
@@ -58,14 +77,16 @@ autocmd BufNewFile,BufRead *.html.arb setfiletype ruby
 autocmd BufNewFile,BufRead *.rss setfiletype xml
 
 " to not stuck vim while checking syntax of long lines
-set synmaxcol=200
+set synmaxcol=800
 
 " identation
 set autoindent
 set smartindent
 
 " set gui settings
-set guifont=Monaco:h13
+" set guifont=Monaco:h13
+" powerline supporting in MacVim
+set guifont=Source\ Code\ Pro\ for\ Powerline:h12
 
 " enable per-directory .vimrc files supporting
 set exrc
@@ -86,25 +107,13 @@ set updatetime=250 " default is about 4000 miliseconds
 
 set noswapfile " disable creation of swap files
 
-set nowrap
+set wrap
 
 set list
-set listchars=tab:▸\ ,eol:¬
+set listchars=tab:▸\ ,eol:¬,trail:-,nbsp:+
 
 set hlsearch
 set path+=**
-
-" vim-session - sessions management
-let g:session_directory = "/tmp/" " will be lost after reboot
-let g:session_extension = '.vimsession'
-let g:session_autoload = 'no' " load needed session manually
-let g:session_autosave = 'yes' " autosave current opened session
-let g:session_menu = 0
-let g:session_command_aliases = 1
-nnoremap <Leader>so :OpenSession
-nnoremap <Leader>ss :SaveSession
-nnoremap <Leader>sd :DeleteSession<CR>
-nnoremap <Leader>sc :CloseSession<CR>
 
 " CtrlP settings
 filetype plugin indent on
@@ -112,8 +121,6 @@ syntax on
 set runtimepath^=~/.vim/plugged/ctrlp.vim
 let g:ctrlp_user_command = 'ag %s -l --nocolor -g "" -U'
 let g:ctrlp_use_caching = 0
-nnoremap <Leader>. :CtrlPTag<CR>
-nnoremap <Leader>b :CtrlPBuffer<CR>
 
 " NERDTree
 map <Leader>n :NERDTreeToggle<CR>
@@ -122,10 +129,9 @@ let NERDTreeShowHidden = 1 " show hidden files by default
 
 " vim-airline
 let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tabline#left_sep = ''
-let g:airline#extensions#tabline#left_alt_sep = ''
 let g:airline#extensions#tabline#buffer_nr_show = 1
 let g:airline_theme='luna'
+let g:airline_powerline_fonts = 1
 
 set background=dark " dark or light
 colorscheme solarized
@@ -136,7 +142,6 @@ let g:NERDSpaceDelims = 1
 let g:NERDCommentEmptyLines = 1
 let g:NERDTrimTrailingWhitespace = 1
 let g:NERDDefaultAlign = 'left'
-map <C-c> <Plug>NERDCommenterToggle('n', 'Toggle')<CR>
 
 " RSpec.vim mappings
 map <Leader>t :call RunCurrentSpecFile()<CR>
@@ -145,22 +150,11 @@ map <Leader>l :call RunLastSpec()<CR>
 let g:rspec_command = "Dispatch bin/rspec {spec}" " running specs through bin stub
 let g:rspec_runner = "os_x_iterm2"
 
-" vim-syntastic
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
-let g:syntastic_aggregate_errors = 1
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 1
-let g:syntastic_ruby_checkers = ['mri'] " or rubocop, but slow
-let g:syntastic_javascript_checkers = ['jshint']
-let g:syntastic_javascript_jshint_exec = '/usr/local/bin/jshint'
-let g:syntastic_scss_checkers = ['sass_lint']
-let g:syntastic_eruby_ruby_quiet_messages =
-    \ {"regex": "possibly useless use of a variable in void context"}
+" ale, linting
+let g:airline#extensions#ale#enabled = 1
+let g:ale_lint_on_text_changed = 'never'
+let g:ale_open_list = 1
+let g:ale_javascript_jshint_executable = '/usr/local/bin/jshint'
 
 " Ruby Autocomplete
 autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
@@ -178,3 +172,71 @@ set wildmode=longest:list,full
 " close the current buffer
 map <Leader>q :bp\|bd #<CR>
 
+" This callback will be executed when the entire command is completed
+function! BackgroundCommandClose(channel)
+  " Read the output from the command into the quickfix window
+  execute "cfile! " . g:backgroundCommandOutput
+  " Open the quickfix window
+  " copen
+  unlet g:backgroundCommandOutput
+endfunction
+
+function! RunBackgroundCommand(command)
+  " Make sure we're running VIM version 8 or higher.
+  if v:version < 800
+    echoerr 'RunBackgroundCommand requires VIM version 8 or higher'
+    return
+  endif
+
+  if exists('g:backgroundCommandOutput')
+    echo 'Already running task in background'
+  else
+    echo 'Running task in background'
+    " Launch the job.
+    " Notice that we're only capturing out, and not err here. This is because, for some reason, the callback
+    " will not actually get hit if we write err out to the same file. Not sure if I'm doing this wrong or?
+    let g:backgroundCommandOutput = tempname()
+    call job_start(a:command, {'close_cb': 'BackgroundCommandClose', 'out_io': 'file', 'out_name': g:backgroundCommandOutput})
+  endif
+endfunction
+command! -nargs=+ -complete=shellcmd RunBackgroundCommand call RunBackgroundCommand(<q-args>)
+" stop spring
+nnoremap <Leader>ss :RunBackgroundCommand spring stop<CR>
+
+function! RunRawRspec(mode)
+  let fn=expand('%:p') " full path
+  if a:mode == 0
+    let line=line('.') " getline('.') returns current row (string)
+    execute "!bin/rspec " . fn . ":" . line
+  else
+    execute "!bin/rspec " . fn
+  endif
+endfunction
+nnoremap <Leader>r :call RunRawRspec(0)<CR>
+nnoremap <Leader>R :call RunRawRspec(1)<CR>
+
+" Typos
+command! -bang W w<bang>
+
+" Visual Mode */# from Scrooloose
+function! s:VSetSearch()
+  let temp = @@
+  norm! gvy
+  let @/ = '\V' . substitute(escape(@@, '\'), '\n', '\\n', 'g')
+  let @@ = temp
+endfunction
+vnoremap * :<C-u>call <SID>VSetSearch()<CR>//<CR><c-o>
+vnoremap # :<C-u>call <SID>VSetSearch()<CR>??<CR><c-o>
+
+" Make sure Vim returns to the same line when you reopen a file.
+augroup line_return
+    au!
+    au BufReadPost *
+        \ if line("'\"") > 0 && line("'\"") <= line("$") |
+        \     execute 'normal! g`"zvzz' |
+        \ endif
+augroup END
+
+" autofixes
+iab exmaple example
+iab buebug byebug
