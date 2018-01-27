@@ -5,4 +5,4 @@ VIM configuration
 
 git clone git@github.com:gigorok/dotvim.git ~/.vim
 
-Then run VIM and run command :PluginInstall
+Then run VIM and run command :PlugInstall
